@@ -1,1 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Digital Core Live</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        .question {
+            font-size: 20px;
+            margin: 30px 0;
+        }
+
+        input {
+            width: 90%;
+            padding: 15px;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+        }
+
+        #status {
+            margin-top: 25px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1 id="title">Digital Core Live</h1>
+
+    <div class="question" id="question">
+        What is the biggest challenge for the Digital Core today?
+    </div>
+
+    <input
+        id="answer"
+        type="text"
+        maxlength="80"
+        placeholder="Sum it up in one word"
+    >
+
+    <br>
+
+    <button id="send">
+        Send
+    </button>
+
+    <div id="status"></div>
+
+    <script>
+
+        const SUPABASE_URL =
+            "https://soopsbnabrfgmnkixmql.supabase.co";
+
+        const SUPABASE_KEY =
+            "TA_CLE_PUBLISHABLE";
+
+        // --------------------------------
+        // READ SESSION FROM URL
+        // --------------------------------
+
+        const params =
+            new URLSearchParams(window.location.search);
+
+        const SESSION =
+            params.get("session") || "reference-group";
+
+        const TITLE =
+            params.get("title") || "Digital Core Live";
+
+        const QUESTION =
+            params.get("question") ||
+            "What is the biggest challenge for the Digital Core today?";
+
+
+        // --------------------------------
+        // DISPLAY TITLE + QUESTION
+        // --------------------------------
+
+        document.getElementById("title").textContent =
+            TITLE;
+
+        document.getElementById("question").textContent =
+            QUESTION;
+
+        document.title = TITLE;
+
+
+        // --------------------------------
+        // SEND RESPONSE
+        // --------------------------------
+
+        document.getElementById("send").onclick =
+            async function () {
+
+                const input =
+                    document.getElementById("answer");
+
+                const status =
+                    document.getElementById("status");
+
+                const answer =
+                    input.value.trim();
+
+                if (!answer) {
+
+                    status.textContent =
+                        "Please enter an answer.";
+
+                    return;
+                }
+
+                status.textContent =
+                    "Sending...";
+
+                try {
+
+                    const response = await fetch(
+                        `${SUPABASE_URL}/rest/v1/Responses`,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "apikey": SUPABASE_KEY,
+                                "Content-Type": "application/json",
+                                "Prefer": "return=minimal"
+                            },
+
+                            body: JSON.stringify({
+                                answer: answer,
+                                session: SESSION
+                            })
+                        }
+                    );
+
+                    if (!response.ok) {
+
+                        const text =
+                            await response.text();
+
+                        throw new Error(
+                            `HTTP ${response.status}: ${text}`
+                        );
+                    }
+
+                    status.textContent =
+                        "✓ Response received. Thank you!";
+
+                    input.value = "";
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    status.textContent =
+                        "Unable to send your response.";
+                }
+            };
+
+    </script>
+
+</body>
+</html>
